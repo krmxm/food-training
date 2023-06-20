@@ -263,10 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // form.append(statusMessage);
             form.insertAdjacentElement('afterend', statusMessage);
 
-            const request = new XMLHttpRequest();
-            request.open('POST', 'server.php');
+            
 
-            request.setRequestHeader('Content-type', 'application/json');
             const formData = new FormData(form);
 
             const object = {};
@@ -274,20 +272,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 object[key] = value;
             });
 
-            const json = JSON.stringify(object); // конвертация в JSON
-
-            request.send(json);
-
-            request.addEventListener('load', () => {
-                if (request.status === 200) {
-                    console.log(request.response);
-                    showThanksModal(message.success, modalSelector);
-                    statusMessage.remove();
-                    form.reset();
-                } else {
-                    showThanksModal(message.failure, modalSelector);
-                }
+            fetch('server.php', {
+                method: "POST",
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(object) // конвертация в JSON
+            })
+            .then(data => data.text())
+            .then(data => {
+                console.log(data);
+                showThanksModal(message.success, modalSelector);
+                statusMessage.remove();
+            }).catch(() => {
+                showThanksModal(message.failure, modalSelector);
+            }).finally(() => {
+                form.reset();
             });
+
         });
     }
 
@@ -316,5 +318,4 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal(modalSelector);
         }, 4000);
     }
-    
 });
